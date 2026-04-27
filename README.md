@@ -24,6 +24,37 @@ Role Variables
 * `directadmin_include_modsecurity`: Include ModSecurity playbook.
 * `modsecurity`: Set to `'yes'` to enable.
 * `modsecurity_ruleset`: This is the ruleset from DirectAdmin.
+* `directadmin_packages`: User packages, grouped per (reseller) user. Each
+  package is written as `key=value` to
+  `/usr/local/directadmin/data/users/<user>/packages/<package>.pkg`. The user
+  must already exist in DirectAdmin. Packages on disk that are not in this
+  variable are removed (except those in `directadmin_packages_keep`).
+* `directadmin_packages_keep`: Package names that are never removed even when
+  not in `directadmin_packages`. Defaults to `[default]`.
+* `directadmin_package_keys_extra`: Additional valid package keys to allow on
+  top of the built-in list, for keys introduced by newer DirectAdmin versions.
+
+Example:
+
+```yaml
+directadmin_packages:
+  sensson:
+    basic:
+      bandwidth: 1000
+      quota: 500
+      domainptr: 5
+      ftp: 10
+      mysql: 5
+      nemails: 25
+      nsubdomains: 10
+      ssl: ON
+      cgi: ON
+      php: ON
+    pro:
+      bandwidth: unlimited
+      quota: unlimited
+      ssl: ON
+```
 
 Dependencies
 ------------

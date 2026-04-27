@@ -20,3 +20,10 @@
 - name: Incldude ModSecurity
   include: custombuild/modsecurity.yml
   when: directadmin_include_modsecurity|default(false)
+
+- name: Include packages
+  include_tasks: packages.yml
+  loop: "{{ directadmin_packages | default({}) | dict2items }}"
+  loop_control:
+    loop_var: package_user
+    label: "{{ package_user.key }}"

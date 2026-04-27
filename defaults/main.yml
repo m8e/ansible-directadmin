@@ -11,3 +11,67 @@ setup_environment_variables:
 directadmin_include_modsecurity: false
 modsecurity: 'no'
 modsecurity_ruleset: 'no'
+
+directadmin_packages: {}
+directadmin_packages_keep:
+  - default
+directadmin_package_keys:
+  - CPUQuota
+  - IOReadBandwidthMax
+  - IOReadIOPSMax
+  - IOWriteBandwidthMax
+  - IOWriteIOPSMax
+  - MemoryHigh
+  - MemoryMax
+  - TasksMax
+  - additional_ssl_certs
+  - aftp
+  - auto_security_txt
+  - bandwidth
+  - catchall
+  - cgi
+  - clamav
+  - cron
+  - demo
+  - dnscontrol
+  - docker
+  - domainptr
+  - elasticsearch
+  - email_daily_limit
+  - feature_sets
+  - ftp
+  - git
+  - htpasswd_passwords
+  - imap
+  - inode
+  - ips
+  - jail
+  - language
+  - letsencrypt
+  - login_keys
+  - max_email_quota
+  - memcached
+  - mysql
+  - nemailf
+  - nemailml
+  - nemailr
+  - nemails
+  - ngraph
+  - nodeapp
+  - nsubdomains
+  - oddepoch
+  - php
+  - plugins_deny
+  - pop
+  - pythonapp
+  - quota
+  - redis
+  - skin
+  - spam
+  - ssh
+  - ssl
+  - suspend_at_limit
+  - sysinfo
+  - vdomains
+  - wordpress
+directadmin_package_keys_extra: []

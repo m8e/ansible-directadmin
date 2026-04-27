@@ -1,0 +1,41 @@
+---
+- name: DirectAdmin | Packages | Validate keys for {{ package_user.key }}
+  assert:
+    that:
+      - (item.value.keys() | list | difference(directadmin_package_keys + directadmin_package_keys_extra)) | length == 0
+    fail_msg: >-
+      Invalid keys in package {{ package_user.key }}/{{ item.key }}:
+      {{ item.value.keys() | list | difference(directadmin_package_keys + directadmin_package_keys_extra) | join(', ') }}
+  loop: "{{ package_user.value | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: DirectAdmin | Packages | Configure packages for {{ package_user.key }}
+  template:
+    src: package.pkg.j2
+    dest: "/usr/local/directadmin/data/users/{{ package_user.key }}/packages/{{ item.key }}.pkg"
+    owner: diradmin
+    group: diradmin
+    mode: '0600'
+  vars:
+    package: "{{ item.value }}"
+  loop: "{{ package_user.value | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: DirectAdmin | Packages | Find existing packages for {{ package_user.key }}
+  find:
+    paths: "/usr/local/directadmin/data/users/{{ package_user.key }}/packages"
+    patterns: "*.pkg"
+  register: existing_packages
+
+- name: DirectAdmin | Packages | Remove obsolete packages for {{ package_user.key }}
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ existing_packages.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when:
+    - (item.path | basename | regex_replace('\.pkg$', '')) not in package_user.value
+    - (item.path | basename | regex_replace('\.pkg$', '')) not in directadmin_packages_keep
