@@ -24,6 +24,10 @@ Role Variables
 * `directadmin_include_modsecurity`: Include ModSecurity playbook.
 * `modsecurity`: Set to `'yes'` to enable.
 * `modsecurity_ruleset`: This is the ruleset from DirectAdmin.
+* `directadmin_accounts`: Resellers and admins to create. Existing accounts
+  (detected via `/usr/local/directadmin/data/users/<name>/`) are left
+  untouched. Authentication uses an API URL minted on the server with
+  `da api-url`, so no credentials are needed.
 * `directadmin_packages`: User packages, grouped per (reseller) user. Each
   package is written as `key=value` to
   `/usr/local/directadmin/data/users/<user>/packages/<package>.pkg`. The user
@@ -37,6 +41,19 @@ Role Variables
 Example:
 
 ```yaml
+directadmin_accounts:
+  sensson:
+    type: reseller
+    email: hostmaster@sensson.net
+    domain: sensson.net
+    package: pro
+    ip: 1.2.3.4
+    password: "{{ vault_sensson_password }}"
+  superadmin:
+    type: admin
+    email: admin@example.com
+    password: "{{ vault_superadmin_password }}"
+
 directadmin_packages:
   sensson:
     basic:
@@ -55,6 +72,47 @@ directadmin_packages:
       quota: unlimited
       ssl: ON
 ```
+
+Storing passwords with ansible-vault
+------------------------------------
+
+Account passwords should not be committed to git in plain text. Use
+`ansible-vault` to encrypt them.
+
+Create an encrypted file alongside your group vars, for example
+`group_vars/directadmin/vault.yml`:
+
+```bash
+ansible-vault create group_vars/directadmin/vault.yml
+```
+
+Put the secret values in there, prefixed with `vault_` by convention:
+
+```yaml
+vault_sensson_password: "AbcXyz123!"
+vault_superadmin_password: "Sup3rS3cret"
+```
+
+In the regular (unencrypted) `group_vars/directadmin/vars.yml` you reference
+those vault variables:
+
+```yaml
+directadmin_accounts:
+  sensson:
+    type: reseller
+    password: "{{ vault_sensson_password }}"
+    ...
+```
+
+Run the playbook with one of:
+
+```bash
+ansible-playbook site.yml --ask-vault-pass
+ansible-playbook site.yml --vault-password-file ~/.vault_pass
+```
+
+Make sure the password file is in `.gitignore`. Edit existing secrets with
+`ansible-vault edit group_vars/directadmin/vault.yml`.
 
 Dependencies
 ------------

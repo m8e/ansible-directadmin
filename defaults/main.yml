@@ -12,6 +12,8 @@ directadmin_include_modsecurity: false
 modsecurity: 'no'
 modsecurity_ruleset: 'no'
 
+directadmin_accounts: {}
+
 directadmin_packages: {}
 directadmin_packages_keep:
   - default

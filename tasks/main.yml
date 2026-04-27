@@ -21,6 +21,9 @@
   include: custombuild/modsecurity.yml
   when: directadmin_include_modsecurity|default(false)
 
+- name: Include accounts
+  import_tasks: accounts.yml
+
 - name: Include packages
   include_tasks: packages.yml
   loop: "{{ directadmin_packages | default({}) | dict2items }}"

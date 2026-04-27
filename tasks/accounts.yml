@@ -1,0 +1,64 @@
+---
+- name: DirectAdmin | Accounts | Check existing accounts
+  stat:
+    path: "/usr/local/directadmin/data/users/{{ item.key }}"
+  register: directadmin_existing_accounts
+  loop: "{{ directadmin_accounts | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: DirectAdmin | Accounts | Get API URL
+  command: /usr/bin/da api-url
+  register: directadmin_api_url
+  changed_when: false
+  check_mode: false
+  when: directadmin_existing_accounts.results | rejectattr('stat.exists') | list | length > 0
+
+- name: DirectAdmin | Accounts | Create resellers
+  uri:
+    url: "{{ directadmin_api_url.stdout }}/CMD_API_ACCOUNT_RESELLER"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      action: create
+      add: Submit
+      username: "{{ item.item.key }}"
+      email: "{{ item.item.value.email }}"
+      passwd: "{{ item.item.value.password }}"
+      passwd2: "{{ item.item.value.password }}"
+      domain: "{{ item.item.value.domain }}"
+      package: "{{ item.item.value.package }}"
+      ip: "{{ item.item.value.ip }}"
+      notify: 'no'
+    return_content: yes
+  register: directadmin_create_reseller
+  failed_when: "'error=1' in (directadmin_create_reseller.content | default(''))"
+  loop: "{{ directadmin_existing_accounts.results }}"
+  loop_control:
+    label: "{{ item.item.key }}"
+  when:
+    - not item.stat.exists
+    - item.item.value.type == 'reseller'
+
+- name: DirectAdmin | Accounts | Create admins
+  uri:
+    url: "{{ directadmin_api_url.stdout }}/CMD_API_ACCOUNT_ADMIN"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      action: create
+      add: Submit
+      username: "{{ item.item.key }}"
+      email: "{{ item.item.value.email }}"
+      passwd: "{{ item.item.value.password }}"
+      passwd2: "{{ item.item.value.password }}"
+      notify: 'no'
+    return_content: yes
+  register: directadmin_create_admin
+  failed_when: "'error=1' in (directadmin_create_admin.content | default(''))"
+  loop: "{{ directadmin_existing_accounts.results }}"
+  loop_control:
+    label: "{{ item.item.key }}"
+  when:
+    - not item.stat.exists
+    - item.item.value.type == 'admin'
